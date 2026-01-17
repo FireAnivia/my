@@ -327,7 +327,7 @@ function renderPopupContent(popup) {
     `;
   popup.document.write(htmlContent);
   popup.document.close();
-  fetchAndRenderPopup(); // Gọi hàm lấy dữ liệu
+  fetchAndRenderPopup();
 }
 
 // CÁC HÀM HỖ TRỢ POPUP (Giữ nguyên)
