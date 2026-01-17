@@ -1,20 +1,44 @@
 <!doctype html>
-<html>
+<html lang="vi">
   <head>
     <meta charset="UTF-8" />
-    <title>Nhật ký học</title>
+    <title>Nhật ký học tập</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div id="sidebar">
-      <h2>Nhật ký học</h2>
-      <button onclick="loadNotes()">Danh sách nhật ký</button>
-      <button onclick="showAdd()">Thêm nhật ký</button>
-      <button onclick="loadGroups()">Quản lý nhóm</button>
+      <h2>📚 Nhật ký học</h2>
+      <button onclick="showHome()">🏠 Trang chủ</button>
+      <button onclick="loadNotes()">📖 Danh sách nhật ký</button>
+      <button onclick="showAdd()">➕ Tạo nhật ký</button>
+      <button onclick="loadGroups()">📂 Quản lý nhóm</button>
+      <button onclick="toggleHelper()">💡 Hỗ trợ lệnh</button>
     </div>
 
     <div id="content">
-      <h1>Chào mừng bạn</h1>
+      <h1>Chào mừng bạn 👋</h1>
+      <p>Chọn chức năng bên trái để bắt đầu.</p>
+    </div>
+
+    <!-- CỬA SỔ HỖ TRỢ LỆNH -->
+    <div id="helper">
+      <h3>💡 Hỗ trợ lệnh</h3>
+
+      <select id="cmdLang">
+        <option value="python">Python</option>
+        <option value="cpp">C++</option>
+        <option value="java">Java</option>
+        <option value="sql">SQL</option>
+      </select>
+
+      <input id="cmdText" placeholder="Nhập câu lệnh..." />
+
+      <button onclick="addCommand()">➕ Thêm lệnh</button>
+
+      <h4>Danh sách lệnh của bạn:</h4>
+      <div id="cmdResult"></div>
+
+      <button onclick="toggleHelper()">Đóng</button>
     </div>
 
     <script src="app.js"></script>

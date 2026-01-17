@@ -1,22 +1,81 @@
 body {
   display: flex;
   margin: 0;
-  font-family: Arial;
+  font-family: Arial, sans-serif;
+  height: 100vh;
 }
 
+/* MENU BÊN TRÁI */
 #sidebar {
-  width: 220px;
+  width: 240px;
   background: #2c3e50;
   color: white;
   padding: 15px;
 }
 
+#sidebar h2 {
+  text-align: center;
+}
+
+#sidebar button {
+  width: 100%;
+  margin: 6px 0;
+  padding: 10px;
+  border: none;
+  background: #34495e;
+  color: white;
+  cursor: pointer;
+}
+
+#sidebar button:hover {
+  background: #1abc9c;
+}
+
+/* NỘI DUNG CHÍNH */
 #content {
   flex: 1;
   padding: 20px;
 }
 
-button {
-  width: 100%;
-  margin: 5px 0;
+/* CỬA SỔ HỖ TRỢ LỆNH */
+#helper {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 350px;
+  background: white;
+  border: 2px solid #2c3e50;
+  padding: 10px;
+  display: none;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.wide-input {
+  width: 80%;
+  padding: 8px;
+}
+
+.big-textarea {
+  width: 80%;
+  height: 250px;
+  padding: 10px;
+}
+
+.primary-btn {
+  padding: 10px 15px;
+  background: #1abc9c;
+  border: none;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.primary-btn:hover {
+  background: #16a085;
+}
+
+/* giao diện từng lệnh */
+.cmd-item {
+  border-bottom: 1px solid #ddd;
+  padding: 6px 0;
 }
