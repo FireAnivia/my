@@ -21,9 +21,30 @@
       <button onclick="openHelperPopup()">💡 Tra cứu lệnh (Popup)</button>
     </div>
 
-    <div id="content">
-      <h1>Chào mừng bạn trở lại! 👋</h1>
-      <p>Chọn một chức năng bên trái để bắt đầu học tập.</p>
+    <div id="content"></div>
+
+    <div id="noteModal" class="modal">
+      <div class="modal-content">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <h2 id="modalTitle">Tiêu đề bài học</h2>
+        <div
+          id="modalMeta"
+          style="color: #666; font-size: 0.9em; margin-bottom: 15px"
+        ></div>
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 10px 0" />
+        <div
+          id="modalBody"
+          style="
+            line-height: 1.6;
+            white-space: pre-wrap;
+            max-height: 60vh;
+            overflow-y: auto;
+          "
+        ></div>
+        <div style="text-align: right; margin-top: 20px">
+          <button class="primary-btn" onclick="closeModal()">Đóng</button>
+        </div>
+      </div>
     </div>
 
     <script src="app.js"></script>

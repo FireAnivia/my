@@ -1,4 +1,5 @@
 const API = "http://localhost:3000/api";
+let allNotesData = []; // Biến lưu trữ tạm danh sách ghi chú để không phải tải lại nhiều lần
 
 // ================= TRANG CHỦ =================
 function showHome() {
@@ -7,53 +8,60 @@ function showHome() {
         <h1>Chào mừng đến với không gian học tập</h1>
         <p style="color:#666; font-size: 18px;">"Học, học nữa, học mãi."</p>
         <div style="margin-top: 30px; display: flex; gap: 20px; justify-content: center;">
-            <div style="background:white; padding: 20px; border-radius: 10px; width: 200px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                <h3 style="color: #4f46e5; font-size: 30px; margin: 0;">📚</h3>
-                <p>Ghi chép bài học</p>
+            <div onclick="showAdd()" style="background:white; padding: 20px; border-radius: 10px; width: 200px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor:pointer;">
+                <h3 style="color: #4f46e5; font-size: 30px; margin: 0;">✍️</h3>
+                <p>Viết bài mới</p>
             </div>
-            <div style="background:white; padding: 20px; border-radius: 10px; width: 200px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <div onclick="openHelperPopup()" style="background:white; padding: 20px; border-radius: 10px; width: 200px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor:pointer;">
                 <h3 style="color: #10b981; font-size: 30px; margin: 0;">💡</h3>
-                <p>Tra cứu nhanh</p>
+                <p>Tra cứu lệnh</p>
             </div>
         </div>
     </div>
   `;
 }
 
-// ================= QUẢN LÝ NHẬT KÝ =================
+// ================= QUẢN LÝ NHẬT KÝ (DANH SÁCH CHÍNH) =================
 async function loadNotes() {
   document.getElementById("content").innerHTML =
     "<h2>⏳ Đang tải dữ liệu...</h2>";
   try {
     const res = await fetch(API + "/notes");
-    const notes = await res.json();
+    allNotesData = await res.json(); // Lưu vào biến toàn cục
 
     let html = `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-            <h2>📖 Danh sách bài học</h2>
+            <h2>📖 Nhật ký của tôi</h2>
             <button onclick="showAdd()" class="primary-btn">➕ Viết mới</button>
         </div>
         <ul>`;
 
-    if (notes.length === 0)
+    if (allNotesData.length === 0)
       html +=
         "<div style='text-align:center; padding: 40px; color: #888;'>Chưa có nhật ký nào. Hãy viết bài đầu tiên!</div>";
     else {
-      notes.forEach((n) => {
+      allNotesData.forEach((n) => {
         const groupTag = n.group_name
           ? `<span class="tag">${n.group_name}</span>`
           : "";
         const time = new Date(n.created_at).toLocaleString("vi-VN", {
           hour12: false,
         });
+
+        // Chỉ hiển thị tối đa 150 ký tự đầu tiên
+        let preview =
+          n.content.length > 150
+            ? n.content.substring(0, 150) + "..."
+            : n.content;
+
         html += `
-          <li class="note-item">
+          <li class="note-item" onclick="viewNoteDetail(${n.id})">
             <div style="flex:1">
               <h3>${n.title} ${groupTag}</h3>
-              <small>📅 ${time}</small>
-              <p>${n.content.replace(/\n/g, "<br>")}</p>
+              <small style="color:#888; margin-bottom:5px; display:block;">📅 ${time}</small>
+              <div class="note-preview">${preview}</div>
             </div>
-            <button onclick="deleteNote(${n.id})" class="delete-btn" title="Xóa">🗑️</button>
+            <button onclick="event.stopPropagation(); deleteNote(${n.id})" class="delete-btn" title="Xóa">🗑️</button>
           </li>
         `;
       });
@@ -70,7 +78,7 @@ async function loadNotes() {
 async function deleteNote(id) {
   if (confirm("Bạn chắc chắn muốn xóa bài học này?")) {
     await fetch(API + "/notes/" + id, { method: "DELETE" });
-    loadNotes();
+    loadNotes(); // Tải lại danh sách
   }
 }
 
@@ -87,18 +95,11 @@ async function showAdd() {
   document.getElementById("content").innerHTML = `
     <div style="max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
         <h2>✍️ Viết nhật ký mới</h2>
-        
-        <label><strong>Tiêu đề bài học:</strong></label>
-        <input id="title" placeholder="VD: Tìm hiểu về vòng lặp For trong Python...">
-        
-        <label><strong>Phân loại nhóm:</strong></label>
+        <input id="title" placeholder="Tiêu đề (VD: Học CSS Flexbox...)">
         <select id="groupId">${options}</select>
-
-        <label><strong>Nội dung chi tiết:</strong></label>
-        <textarea id="contentText" class="big-textarea" placeholder="Ghi lại những gì bạn đã học được..."></textarea>
-        
+        <textarea id="contentText" class="big-textarea" placeholder="Nội dung bài học..."></textarea>
         <div style="text-align: right;">
-            <button onclick="loadNotes()" style="background: transparent; border: 1px solid #ccc; padding: 12px 20px; border-radius: 8px; margin-right: 10px; cursor: pointer;">Hủy</button>
+            <button onclick="loadNotes()" style="background: transparent; border: 1px solid #ccc; padding: 10px 20px; border-radius: 8px; margin-right: 10px; cursor: pointer;">Hủy</button>
             <button onclick="addNote()" class="primary-btn">💾 Lưu nhật ký</button>
         </div>
     </div>
@@ -120,31 +121,73 @@ async function addNote() {
   loadNotes();
 }
 
-// ================= QUẢN LÝ NHÓM =================
+// ================= QUẢN LÝ NHÓM (CẬP NHẬT TÍNH NĂNG XỔ XUỐNG) =================
 async function loadGroups() {
-  const res = await fetch(API + "/groups");
-  const groups = await res.json();
+  document.getElementById("content").innerHTML = "<h2>⏳ Đang tải...</h2>";
 
-  let listHtml = groups
-    .map(
-      (g) => `
-    <li class="group-item">
-      <span>📁 <b>${g.name}</b></span> 
-      <button onclick="deleteGroup(${g.id})" class="delete-btn">Xóa</button>
-    </li>`,
-    )
-    .join("");
+  // Lấy danh sách nhóm
+  const gRes = await fetch(API + "/groups");
+  const groups = await gRes.json();
 
-  document.getElementById("content").innerHTML = `
-    <div style="max-width: 600px; margin: 0 auto;">
-        <h2>📂 Quản lý nhóm</h2>
+  // Lấy TOÀN BỘ nhật ký để phân loại
+  const nRes = await fetch(API + "/notes");
+  allNotesData = await nRes.json();
+
+  let html = `
+      <div style="max-width: 700px; margin: 0 auto;">
+        <h2>📂 Nhóm & Bài học</h2>
         <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-            <input id="newGroupName" placeholder="Nhập tên nhóm mới (VD: ReactJS, Docker...)" style="margin-bottom: 0;">
+            <input id="newGroupName" placeholder="Tên nhóm mới..." style="margin-bottom: 0;">
             <button onclick="addGroup()" class="primary-btn" style="white-space: nowrap;">Thêm nhóm</button>
         </div>
-        <ul>${listHtml || "<p style='text-align:center'>Chưa có nhóm nào</p>"}</ul>
-    </div>
-  `;
+        <div id="accordion-container">`;
+
+  if (groups.length === 0) {
+    html += "<p style='text-align:center'>Chưa có nhóm nào.</p>";
+  } else {
+    groups.forEach((g) => {
+      // Lọc các bài học thuộc nhóm này
+      const groupNotes = allNotesData.filter((n) => n.group_id === g.id);
+      const count = groupNotes.length;
+
+      html += `
+            <div class="group-container">
+                <div class="group-header" onclick="toggleGroupAccordion(${g.id})">
+                    <span style="font-weight:600; font-size:16px;">📁 ${g.name} <span style="font-weight:normal; font-size:13px; color:#666">(${count} bài)</span></span>
+                    <div>
+                        <button onclick="event.stopPropagation(); deleteGroup(${g.id})" class="delete-btn">Xóa nhóm</button>
+                    </div>
+                </div>
+                <div id="g-content-${g.id}" class="group-content">
+                    ${groupNotes.length === 0 ? '<div style="font-style:italic; color:#999; padding:5px;">Trống</div>' : ""}
+                    ${groupNotes
+                      .map(
+                        (n) => `
+                        <div class="group-note-link" onclick="viewNoteDetail(${n.id})">
+                            📄 ${n.title} <span style="font-size:11px; color:#999; float:right">${new Date(n.created_at).toLocaleDateString("vi-VN")}</span>
+                        </div>
+                    `,
+                      )
+                      .join("")}
+                </div>
+            </div>`;
+    });
+  }
+
+  html += `</div></div>`;
+  document.getElementById("content").innerHTML = html;
+}
+
+// Hàm hiệu ứng xổ xuống (Accordion)
+function toggleGroupAccordion(id) {
+  const contentDiv = document.getElementById(`g-content-${id}`);
+  if (contentDiv.style.display === "block") {
+    contentDiv.style.display = "none"; // Ẩn nếu đang hiện
+  } else {
+    // Ẩn tất cả các cái khác trước (nếu muốn chỉ mở 1 cái 1 lúc)
+    // document.querySelectorAll('.group-content').forEach(d => d.style.display = 'none');
+    contentDiv.style.display = "block"; // Hiện cái được chọn
+  }
 }
 
 async function addGroup() {
@@ -161,7 +204,7 @@ async function addGroup() {
 async function deleteGroup(id) {
   if (
     confirm(
-      "Lưu ý: Các bài viết thuộc nhóm này sẽ không bị xóa, nhưng sẽ mất nhãn nhóm. Tiếp tục?",
+      "Xóa nhóm này? Các bài viết trong nhóm sẽ không bị xóa mà chỉ mất phân loại.",
     )
   ) {
     await fetch(API + "/groups/" + id, { method: "DELETE" });
@@ -169,16 +212,55 @@ async function deleteGroup(id) {
   }
 }
 
-// ================= TÍNH NĂNG CỬA SỔ RỜI (POPUP) =================
-// Đây là giải pháp cho yêu cầu "Luôn hiển thị" của bạn
+// ================= MODAL XEM CHI TIẾT (TÍNH NĂNG MỚI) =================
+
+// Hàm mở Modal và điền dữ liệu
+function viewNoteDetail(noteId) {
+  // Tìm bài viết trong mảng dữ liệu đã tải
+  const note = allNotesData.find((n) => n.id === noteId);
+  if (!note) return;
+
+  const modal = document.getElementById("noteModal");
+  const title = document.getElementById("modalTitle");
+  const meta = document.getElementById("modalMeta");
+  const body = document.getElementById("modalBody");
+
+  // Điền dữ liệu
+  title.innerText = note.title;
+  const time = new Date(note.created_at).toLocaleString("vi-VN");
+  const groupName = note.group_name || "Không thuộc nhóm";
+
+  meta.innerHTML = `📅 Thời gian: ${time} | 📂 Nhóm: <strong>${groupName}</strong>`;
+
+  // Xử lý xuống dòng cho đẹp
+  body.innerHTML = note.content.replace(/\n/g, "<br>");
+
+  // Hiển thị modal
+  modal.style.display = "block";
+}
+
+// Hàm đóng Modal
+function closeModal() {
+  document.getElementById("noteModal").style.display = "none";
+}
+
+// Đóng modal khi click ra ngoài vùng trắng
+window.onclick = function (event) {
+  const modal = document.getElementById("noteModal");
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+};
+
+// ================= GIỮ NGUYÊN PHẦN POPUP TRA CỨU CŨ =================
+// (Phần openHelperPopup, fetchCommands... bạn giữ nguyên như code trước nhé)
+// Tôi copy lại đoạn mở popup để đảm bảo nó không bị thiếu.
+
 function openHelperPopup() {
-  // Tạo một cửa sổ mới với kích thước nhỏ gọn
   const width = 450;
   const height = 700;
   const left = (screen.width - width) / 2;
   const top = (screen.height - height) / 2;
-
-  // Mở cửa sổ popup
   const popup = window.open(
     "",
     "HelperWindow",
@@ -186,13 +268,22 @@ function openHelperPopup() {
   );
 
   if (!popup) {
-    alert(
-      "Trình duyệt đã chặn cửa sổ bật lên. Hãy cho phép popup để dùng tính năng này!",
-    );
+    alert("Trình duyệt chặn popup. Hãy cho phép để dùng tính năng này!");
     return;
   }
 
-  // Viết nội dung HTML vào cửa sổ mới này
+  // ... (Code nội dung popup giống hệt bài trước, không cần thay đổi gì ở đây) ...
+  // Để tiết kiệm không gian tôi không paste lại toàn bộ nội dung HTML của popup,
+  // vì logic đó nằm trong hàm openHelperPopup của phiên bản trước.
+  // Nếu bạn cần tôi paste lại toàn bộ thì bảo tôi nhé.
+
+  // Gán lại reference để giao tiếp
+  window.helperPopup = popup;
+  renderPopupContent(popup);
+}
+
+// Hàm render nội dung cho Popup (đã tách ra để gọn code)
+function renderPopupContent(popup) {
   const htmlContent = `
     <html>
     <head>
@@ -234,31 +325,22 @@ function openHelperPopup() {
     </body>
     </html>
     `;
-
   popup.document.write(htmlContent);
   popup.document.close();
-
-  // Lưu reference cửa sổ popup vào biến toàn cục để JS chính có thể điều khiển
-  window.helperPopup = popup;
-
-  // Tải dữ liệu lần đầu cho popup
-  fetchAndRenderPopup();
+  fetchAndRenderPopup(); // Gọi hàm lấy dữ liệu
 }
 
-// Hàm lấy dữ liệu và hiển thị lên Popup
+// CÁC HÀM HỖ TRỢ POPUP (Giữ nguyên)
 async function fetchAndRenderPopup(langFilter = "", keyword = "") {
   if (!window.helperPopup || window.helperPopup.closed) return;
-
   try {
     const res = await fetch(API + "/commands");
     const allCommands = await res.json();
-
     const filtered = allCommands.filter((c) => {
       const matchText = c.command.toLowerCase().includes(keyword.toLowerCase());
       const matchLang = langFilter === "" || c.language === langFilter;
       return matchText && matchLang;
     });
-
     const html = filtered.length
       ? filtered
           .map(
@@ -275,20 +357,15 @@ async function fetchAndRenderPopup(langFilter = "", keyword = "") {
           )
           .join("")
       : "<p style='text-align:center; color:#999'>Không tìm thấy lệnh nào.</p>";
-
     const resultDiv = window.helperPopup.document.getElementById("popupResult");
     if (resultDiv) resultDiv.innerHTML = html;
   } catch (e) {
     console.error("Lỗi popup", e);
   }
 }
-
-// Hàm được gọi từ Popup khi gõ phím
 window.searchPopup = function (lang, key) {
   fetchAndRenderPopup(lang, key);
 };
-
-// Hàm thêm lệnh từ Popup
 window.addCommandFromPopup = async function () {
   const popupDoc = window.helperPopup.document;
   const payload = {
@@ -297,37 +374,28 @@ window.addCommandFromPopup = async function () {
     syntax: popupDoc.getElementById("newSyntax").value,
     example: popupDoc.getElementById("newEx").value,
   };
-
   if (!payload.command) return alert("Thiếu tên lệnh!");
-
   await fetch(API + "/commands", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-
-  // Clear input trong popup
   popupDoc.getElementById("newCmd").value = "";
   popupDoc.getElementById("newSyntax").value = "";
   popupDoc.getElementById("newEx").value = "";
-
   fetchAndRenderPopup(
     popupDoc.getElementById("popupLang").value,
     popupDoc.getElementById("popupInput").value,
   );
 };
-
-// Xóa lệnh (dùng chung cho cả popup và main)
 window.deleteCommand = async function (id) {
   if (confirm("Xóa lệnh này?")) {
     await fetch(API + "/commands/" + id, { method: "DELETE" });
-    // Refresh popup nếu đang mở
     const popupDoc = window.helperPopup?.document;
-    if (popupDoc) {
+    if (popupDoc)
       fetchAndRenderPopup(
         popupDoc.getElementById("popupLang").value,
         popupDoc.getElementById("popupInput").value,
       );
-    }
   }
 };
