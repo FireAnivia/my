@@ -1,4 +1,4 @@
-const API = "http://localhost:3000/api";
+const API = "http://localhost:9999/api";
 let allNotesData = []; // Biến lưu trữ tạm danh sách ghi chú để không phải tải lại nhiều lần
 
 // ================= TRANG CHỦ =================

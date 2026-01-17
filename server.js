@@ -26,7 +26,7 @@ app.use("/api/notes", require("./routes/notes")(db));
 app.use("/api/groups", require("./routes/study_groups")(db));
 app.use("/api/commands", require("./routes/commands")(db));
 
-const PORT = 3000;
+const PORT = 9999;
 app.listen(PORT, () => {
   console.log(`Server chạy tại http://localhost:${PORT}`);
 });
