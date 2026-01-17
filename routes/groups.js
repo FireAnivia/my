@@ -10,13 +10,15 @@ module.exports = function (db) {
   });
 
   router.post("/", (req, res) => {
-    db.query("INSERT INTO groups (name) VALUES (?)", [req.body.name], () =>
-      res.json({ message: "Đã thêm nhóm" }),
+    db.query(
+      "INSERT INTO study_groups (name) VALUES (?)",
+      [req.body.name],
+      () => res.json({ message: "Đã thêm nhóm" }),
     );
   });
 
   router.delete("/:id", (req, res) => {
-    db.query("DELETE FROM groups WHERE id=?", [req.params.id], () =>
+    db.query("DELETE FROM study_groups WHERE id=?", [req.params.id], () =>
       res.json({ message: "Đã xóa nhóm" }),
     );
   });

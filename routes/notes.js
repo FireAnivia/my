@@ -6,7 +6,7 @@ module.exports = function (db) {
   // Lấy tất cả nhật ký
   router.get("/", (req, res) => {
     const sql = `
-      SELECT notes.id, title, content, created_at, groups.name AS group_name
+      SELECT notes.id, title, content, created_at, study_groups.name AS group_name
       FROM notes
       LEFT JOIN study_groups ON notes.group_id = study_groups.id
       ORDER BY created_at DESC;
