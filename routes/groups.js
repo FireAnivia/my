@@ -4,7 +4,7 @@ module.exports = function (db) {
   const router = express.Router();
 
   router.get("/", (req, res) => {
-    db.query("SELECT * FROM groups", (err, results) => {
+    db.query("SELECT * FROM study_groups", (err, results) => {
       res.json(results);
     });
   });
