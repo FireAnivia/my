@@ -2,72 +2,28 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
-    <title>Nhật ký học tập</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hệ Thống Nhật Ký Học Tập</title>
     <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <div id="sidebar">
-      <h2>📚 Nhật ký học</h2>
+      <h2>🚀 STUDY LOG</h2>
       <button onclick="showHome()">🏠 Trang chủ</button>
-      <button onclick="loadNotes()">📖 Danh sách nhật ký</button>
-      <button onclick="showAdd()">➕ Tạo nhật ký</button>
+      <button onclick="loadNotes()">📖 Nhật ký của tôi</button>
+      <button onclick="showAdd()">✍️ Viết nhật ký</button>
       <button onclick="loadGroups()">📂 Quản lý nhóm</button>
-      <button onclick="toggleHelper()">💡 Tra cứu lệnh</button>
+      <hr style="border-color: rgba(255, 255, 255, 0.1); width: 100%" />
+      <button onclick="openHelperPopup()">💡 Tra cứu lệnh (Popup)</button>
     </div>
 
     <div id="content">
-      <h1>Chào mừng bạn 👋</h1>
-      <p>Chọn chức năng bên trái để bắt đầu.</p>
-    </div>
-
-    <div id="helper" style="display: none">
-      <div class="helper-header">
-        <h3>💡 Tra cứu lệnh nhanh</h3>
-        <button onclick="toggleHelper()" class="close-btn">✖</button>
-      </div>
-
-      <div class="search-box">
-        <select id="filterLang" onchange="searchCommands()">
-          <option value="">Tất cả ngôn ngữ</option>
-          <option value="Python">Python</option>
-          <option value="C++">C++</option>
-          <option value="Java">Java</option>
-          <option value="SQL">SQL</option>
-        </select>
-        <input
-          id="searchInput"
-          placeholder="Nhập tên lệnh để tìm..."
-          onkeyup="searchCommands()"
-        />
-      </div>
-
-      <div id="cmdResult"></div>
-
-      <hr />
-
-      <h4>➕ Thêm lệnh mới</h4>
-      <select id="newCmdLang">
-        <option value="Python">Python</option>
-        <option value="C++">C++</option>
-        <option value="Java">Java</option>
-        <option value="SQL">SQL</option>
-      </select>
-      <input
-        id="newCmdName"
-        placeholder="Tên lệnh (VD: print)"
-        class="full-width"
-      />
-      <input
-        id="newCmdSyntax"
-        placeholder="Cú pháp (VD: print(content))"
-        class="full-width"
-      />
-      <input
-        id="newCmdExample"
-        placeholder="Ví dụ (VD: print('Hi'))"
-        class="full-width"
-      />
-      <button onclick="addCommand()" class="add-btn">Lưu lệnh</button>
+      <h1>Chào mừng bạn trở lại! 👋</h1>
+      <p>Chọn một chức năng bên trái để bắt đầu học tập.</p>
     </div>
 
     <script src="app.js"></script>
