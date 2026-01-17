@@ -8,20 +8,17 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
-// Kết nối MySQL
+// KẾT NỐI MYSQL - BẠN NHỚ SỬA LẠI PASSWORD NẾU CẦN
 const db = mysql.createConnection({
   host: "localhost",
-  user: "root", // ← đổi nếu bạn dùng user khác
-  password: "123456", // ← đổi thành mật khẩu MySQL của bạn
+  user: "root",
+  password: "123456", // <-- Đổi password của bạn ở đây
   database: "study_log",
 });
 
 db.connect((err) => {
-  if (err) {
-    console.error("Lỗi kết nối MySQL:", err);
-  } else {
-    console.log("Đã kết nối MySQL!");
-  }
+  if (err) console.error("Lỗi kết nối MySQL:", err);
+  else console.log("Đã kết nối MySQL thành công!");
 });
 
 // Gắn routes

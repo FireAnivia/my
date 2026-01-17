@@ -4,170 +4,222 @@ const API = "http://localhost:3000/api";
 function showHome() {
   document.getElementById("content").innerHTML = `
     <h1>📖 Nhật ký học tập</h1>
-    <p>Chọn chức năng bên trái để bắt đầu.</p>
+    <p>Hệ thống quản lý kiến thức cá nhân.</p>
   `;
 }
 
-// ================= NHẬT KÝ =================
+// ================= QUẢN LÝ NHẬT KÝ =================
 async function loadNotes() {
-  document.getElementById("content").innerHTML =
-    "<h2>⏳ Đang tải nhật ký...</h2>";
-
+  document.getElementById("content").innerHTML = "<h2>⏳ Đang tải...</h2>";
   try {
     const res = await fetch(API + "/notes");
     const notes = await res.json();
 
     let html = "<h2>📖 Danh sách nhật ký</h2><ul>";
-
-    if (notes.length === 0) {
-      html += "<p>Chưa có nhật ký nào.</p>";
-    } else {
+    if (notes.length === 0) html += "<p>Chưa có nhật ký nào.</p>";
+    else {
       notes.forEach((n) => {
+        // Hiển thị Tên nhóm nếu có
+        const groupTag = n.group_name
+          ? `<span class="tag">${n.group_name}</span>`
+          : "";
+        const time = new Date(n.created_at).toLocaleString("vi-VN");
+
         html += `
-          <li>
-            <b>${n.title}</b> — ${n.created_at || ""}
-            <button onclick="deleteNote(${n.id})">🗑️ Xóa</button>
+          <li class="note-item">
+            <div>
+              <h3>${n.title} ${groupTag}</h3>
+              <small>📅 ${time}</small>
+              <p>${n.content}</p>
+            </div>
+            <button onclick="deleteNote(${n.id})">🗑️</button>
           </li>
         `;
       });
     }
-
     html += "</ul>";
     document.getElementById("content").innerHTML = html;
-  } catch (err) {
-    document.getElementById("content").innerHTML =
-      "<p style='color:red'>❌ Lỗi tải nhật ký! Kiểm tra server.</p>";
+  } catch (e) {
+    alert("Lỗi tải nhật ký!");
   }
 }
 
 async function deleteNote(id) {
-  await fetch(API + "/notes/" + id, { method: "DELETE" });
-  loadNotes();
+  if (confirm("Bạn chắc chắn muốn xóa?")) {
+    await fetch(API + "/notes/" + id, { method: "DELETE" });
+    loadNotes();
+  }
 }
 
-// ================= TẠO NHẬT KÝ (SỬA GIAO DIỆN ĐẸP HƠN) =================
-function showAdd() {
-  document.getElementById("content").innerHTML = `
-    <h2>➕ Tạo nhật ký mới</h2>
+// ================= TẠO NHẬT KÝ (CÓ CHỌN NHÓM) =================
+async function showAdd() {
+  // Lấy danh sách nhóm để đưa vào dropdown
+  const res = await fetch(API + "/groups");
+  const groups = await res.json();
 
+  let options = '<option value="">-- Không thuộc nhóm --</option>';
+  groups.forEach((g) => {
+    options += `<option value="${g.id}">${g.name}</option>`;
+  });
+
+  document.getElementById("content").innerHTML = `
+    <h2>➕ Viết nhật ký mới</h2>
     <label>Tiêu đề:</label><br>
-    <input id="title" class="wide-input" placeholder="Nhập tiêu đề bài học"><br><br>
+    <input id="title" class="wide-input" placeholder="Hôm nay học gì?"><br><br>
+    
+    <label>Thuộc nhóm:</label><br>
+    <select id="groupId">${options}</select><br><br>
 
     <label>Nội dung:</label><br>
-    <textarea id="contentText" class="big-textarea"
-      placeholder="Viết nội dung học tại đây..."></textarea><br>
-
-    <button onclick="addNote()" class="primary-btn">💾 Lưu nhật ký</button>
+    <textarea id="contentText" class="big-textarea" placeholder="Nội dung chi tiết..."></textarea><br>
+    
+    <button onclick="addNote()" class="primary-btn">💾 Lưu lại</button>
   `;
 }
 
 async function addNote() {
   const title = document.getElementById("title").value;
   const content = document.getElementById("contentText").value;
+  const group_id = document.getElementById("groupId").value || null;
+
+  if (!title) return alert("Vui lòng nhập tiêu đề!");
 
   await fetch(API + "/notes", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ title, content }),
+    body: JSON.stringify({ title, content, group_id }),
   });
-
-  alert("Đã lưu nhật ký!");
+  alert("Đã lưu!");
   loadNotes();
 }
 
-// ================= QUẢN LÝ NHÓM (SỬA LỖI HIỂN THỊ) =================
+// ================= QUẢN LÝ NHÓM =================
 async function loadGroups() {
-  // Hiển thị UI TRƯỚC để không bị trống màn hình
+  const res = await fetch(API + "/groups");
+  const groups = await res.json();
+
+  let listHtml = groups
+    .map(
+      (g) => `
+    <li>
+      <b>${g.name}</b> 
+      <button onclick="deleteGroup(${g.id})">❌</button>
+    </li>`,
+    )
+    .join("");
+
   document.getElementById("content").innerHTML = `
-    <h2>📂 Quản lý nhóm</h2>
-
-    <input id="groupName" class="wide-input" placeholder="Tên nhóm mới">
-    <button onclick="addGroup()" class="primary-btn">➕ Thêm nhóm</button>
-
-    <h3>Danh sách nhóm:</h3>
-    <ul id="groupList">
-      <li>⏳ Đang tải...</li>
-    </ul>
+    <h2>📂 Quản lý nhóm học tập</h2>
+    <div style="margin-bottom: 20px;">
+      <input id="newGroupName" placeholder="Tên nhóm mới...">
+      <button onclick="addGroup()">Thêm nhóm</button>
+    </div>
+    <ul>${listHtml || "<li>Chưa có nhóm nào</li>"}</ul>
   `;
-
-  try {
-    const res = await fetch(API + "/groups");
-    const groups = await res.json();
-
-    let list = "";
-
-    if (groups.length === 0) {
-      list = "<li>Chưa có nhóm nào.</li>";
-    } else {
-      groups.forEach((g) => {
-        list += `<li>${g.name}</li>`;
-      });
-    }
-
-    document.getElementById("groupList").innerHTML = list;
-  } catch (err) {
-    document.getElementById("groupList").innerHTML =
-      "<li style='color:red'>❌ Không thể tải nhóm!</li>";
-  }
 }
 
 async function addGroup() {
-  const name = document.getElementById("groupName").value;
-
+  const name = document.getElementById("newGroupName").value;
+  if (!name) return;
   await fetch(API + "/groups", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name }),
   });
-
   loadGroups();
 }
 
-// ================= HỖ TRỢ LỆNH (BẠN CÓ THỂ THÊM/XÓA) =================
+async function deleteGroup(id) {
+  if (
+    confirm(
+      "Xóa nhóm này sẽ giữ lại các nhật ký nhưng mất phân loại. Tiếp tục?",
+    )
+  ) {
+    await fetch(API + "/groups/" + id, { method: "DELETE" });
+    loadGroups();
+  }
+}
 
-// lưu tạm trong trình duyệt
-let commands = JSON.parse(localStorage.getItem("commands") || "[]");
+// ================= HỖ TRỢ TRA CỨU (QUAN TRỌNG) =================
+let allCommands = []; // Biến lưu tạm danh sách lệnh để lọc nhanh
 
 function toggleHelper() {
   const h = document.getElementById("helper");
-  h.style.display =
-    h.style.display === "none" || h.style.display === "" ? "block" : "none";
-
-  renderCommands();
+  if (h.style.display === "none") {
+    h.style.display = "block";
+    fetchCommands(); // Tải dữ liệu mới nhất khi mở
+  } else {
+    h.style.display = "none";
+  }
 }
 
-function renderCommands() {
-  let html = "";
+async function fetchCommands() {
+  const res = await fetch(API + "/commands");
+  allCommands = await res.json();
+  searchCommands(); // Hiển thị luôn
+}
 
-  if (commands.length === 0) {
-    html = "<p>Chưa có lệnh nào. Hãy thêm bên dưới.</p>";
-  } else {
-    commands.forEach((c, i) => {
-      html += `
-        <div class="cmd-item">
-          <b>[${c.lang}]</b> ${c.text}
-          <button onclick="deleteCommand(${i})">🗑️</button>
-        </div>
-      `;
-    });
+function searchCommands() {
+  const keyword = document.getElementById("searchInput").value.toLowerCase();
+  const langFilter = document.getElementById("filterLang").value;
+
+  // Lọc dữ liệu
+  const filtered = allCommands.filter((c) => {
+    const matchText = c.command.toLowerCase().includes(keyword);
+    const matchLang = langFilter === "" || c.language === langFilter;
+    return matchText && matchLang;
+  });
+
+  // Render ra HTML
+  const resultDiv = document.getElementById("cmdResult");
+  if (filtered.length === 0) {
+    resultDiv.innerHTML = "<p>Không tìm thấy lệnh nào.</p>";
+    return;
   }
 
-  document.getElementById("cmdResult").innerHTML = html;
+  resultDiv.innerHTML = filtered
+    .map(
+      (c) => `
+    <div class="cmd-card">
+      <div style="display:flex; justify-content:space-between">
+        <strong style="color: #007bff">[${c.language}] ${c.command}</strong>
+        <button onclick="deleteCommand(${c.id})" class="sm-btn">🗑️</button>
+      </div>
+      <div><b>Cú pháp:</b> <code>${c.syntax}</code></div>
+      <div><b>Ví dụ:</b> <span style="color:green">${c.example}</span></div>
+    </div>
+  `,
+    )
+    .join("");
 }
 
-function addCommand() {
-  const lang = document.getElementById("cmdLang").value;
-  const text = document.getElementById("cmdText").value;
+async function addCommand() {
+  const payload = {
+    language: document.getElementById("newCmdLang").value,
+    command: document.getElementById("newCmdName").value,
+    syntax: document.getElementById("newCmdSyntax").value,
+    example: document.getElementById("newCmdExample").value,
+  };
 
-  commands.push({ lang, text });
-  localStorage.setItem("commands", JSON.stringify(commands));
+  if (!payload.command) return alert("Nhập tên lệnh!");
 
-  document.getElementById("cmdText").value = "";
-  renderCommands();
+  await fetch(API + "/commands", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  // Reset form
+  document.getElementById("newCmdName").value = "";
+  document.getElementById("newCmdSyntax").value = "";
+  document.getElementById("newCmdExample").value = "";
+
+  fetchCommands(); // Tải lại danh sách
 }
 
-function deleteCommand(i) {
-  commands.splice(i, 1);
-  localStorage.setItem("commands", JSON.stringify(commands));
-  renderCommands();
+async function deleteCommand(id) {
+  if (confirm("Xóa lệnh này?")) {
+    await fetch(API + "/commands/" + id, { method: "DELETE" });
+    fetchCommands();
+  }
 }
